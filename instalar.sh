@@ -25,12 +25,11 @@ sudo -H /usr/bin/python3 install.py server
 sudo apt install -y unrar
 unrar x -o+ Ejemplos.rar /opt/openquake/venv/demos/hazard/
 
-# Instalar dos2unix y convertir el archivo Ejecutar.sh
-sudo apt install -y dos2unix
-dos2unix Ejecutar.sh
+# Hacer el archivo Ejecutar.sh ejecutable
+chmod +x ejecutar.sh
 
 # Hacer el archivo Ejecutar.sh ejecutable
-chmod +x Ejecutar.sh
+chmod +x desplegar.sh
 
 # Mostrar mensaje de finalización
 echo "Openquake instalado con éxito"
