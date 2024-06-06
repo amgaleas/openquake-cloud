@@ -52,7 +52,7 @@ cpu_usage=$(awk '{total += $13} END {print total/NR}' vmstat.log)
 ram_free_avg=$(awk '{total += $4} END {print total/NR}' vmstat.log) # Memoria libre promedio en KB
 ram_total=$(grep MemTotal /proc/meminfo | awk '{print $2}') # Memoria total en KB
 ram_used_avg=$((ram_total - ram_free_avg)) # Memoria usada promedio en KB
-ram_usage_percent=$(awk "BEGIN {printf \"%.2f\", ($ram_used_avg/$ram_total)*100}") # Porcentaje de uso de RAM
+ram_usage_percent=$(echo "scale=2; $ram_used_avg*100/$ram_total" | bc)
 
 # Mostrar resultados
 echo "Uso promedio de CPU: $cpu_usage %"
