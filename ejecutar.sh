@@ -46,7 +46,7 @@ end_time=$(date +%s)
 execution_time=$((end_time - start_time))
 
 # Encontrar el último archivo HDF5 generado
-latest_hdf5=$(ls -t /root/oqdata/calc_*.hdf5 | head -n 1)
+latest_hdf5=$(ls -t /home/openquake/oqdata/calc_*.hdf5 | head -n 1)
 size_kb=$(du -k "$latest_hdf5" | cut -f1)
 
 # Uso de CPU y RAM promedio calculado con awk
