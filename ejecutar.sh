@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Verificar que se han proporcionado dos argumentos
-if [ "$#" -ne 2 ]; then
-    echo "Uso: $0 <corto|largo> <nuevo_region_grid_spacing>"
+# Verificar que se ha proporcionado al menos un argumento
+if [ "$#" -lt 1 ]; then
+    echo "Uso: $0 <corto|largo> [nuevo_region_grid_spacing]"
     exit 1
 fi
 
@@ -20,11 +20,12 @@ else
     exit 1
 fi
 
-# Reemplazar el valor de region_grid_spacing en el archivo .ini
-sed -i "s/region_grid_spacing = .*/region_grid_spacing = $nuevo_grid_spacing/" "$archivo_ini"
+# Reemplazar el valor de region_grid_spacing en el archivo .ini si se proporciona el segundo argumento
+if [ ! -z "$nuevo_grid_spacing" ]; then
+    sed -i "s/region_grid_spacing = .*/region_grid_spacing = $nuevo_grid_spacing/" "$archivo_ini"
+fi
 
 # Inicia monitoreo de CPU y RAM
-echo "Iniciando monitoreo de recursos..."
 vmstat 1 > vmstat.log &
 VMSTAT_PID=$!
 
@@ -47,12 +48,14 @@ execution_time=$((end_time - start_time))
 latest_hdf5=$(ls -t /root/oqdata/calc_*.hdf5 | head -n 1)
 size_kb=$(du -k "$latest_hdf5" | cut -f1)
 
-# Cálculos de uso promedio de CPU y RAM
-cpu_usage=$(awk '{total += $13} END {print total/NR}' vmstat.log)
-ram_free_avg=$(awk '{total += $4} END {print total/NR}' vmstat.log) # Memoria libre promedio en KB
+# Cálculos de uso promedio de CPU y RAM usando vmstat con columnas específicas
+cpu_usage=$(awk 'NR > 2 {total += $13} END {if (NR > 2) print total/(NR-2); else print 0}' vmstat.log)
+ram_free_avg=$(awk 'NR > 2 {total += $4} END {if (NR > 2) print total/(NR-2); else print 0}' vmstat.log) # Memoria libre promedio en KB
 ram_total=$(grep MemTotal /proc/meminfo | awk '{print $2}') # Memoria total en KB
 ram_used_avg=$((ram_total - ram_free_avg)) # Memoria usada promedio en KB
-ram_usage_percent=$(echo "scale=2; $ram_used_avg*100/$ram_total" | bc)
+
+# Calcula el porcentaje de uso de RAM con precisión
+ram_usage_percent=$(echo "scale=2; $ram_used_avg*100/$ram_total" | bc -l)
 
 # Mostrar resultados
 echo "Uso promedio de CPU: $cpu_usage %"
