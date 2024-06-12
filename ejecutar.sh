@@ -26,14 +26,15 @@ if [ ! -z "$nuevo_grid_spacing" ]; then
 fi
 
 # Inicia monitoreo de CPU y RAM
+echo "Iniciando monitoreo de recursos..."
 vmstat 1 > vmstat.log &
 VMSTAT_PID=$!
 
 # Captura el tiempo de inicio
 start_time=$(date +%s)
 
-# Ejecutar el comando OpenQuake
-oq engine --run "$archivo_ini"
+# Ejecutar el comando OpenQuake como usuario openquake
+sudo -u openquake oq engine --run "$archivo_ini"
 
 # Detener el monitoreo de recursos
 kill $VMSTAT_PID
@@ -48,13 +49,10 @@ execution_time=$((end_time - start_time))
 latest_hdf5=$(ls -t /root/oqdata/calc_*.hdf5 | head -n 1)
 size_kb=$(du -k "$latest_hdf5" | cut -f1)
 
-# Cálculos de uso promedio de CPU y RAM usando vmstat con columnas específicas
-cpu_usage=$(awk 'NR > 2 {total += $13} END {if (NR > 2) print total/(NR-2); else print 0}' vmstat.log)
-ram_free_avg=$(awk 'NR > 2 {total += $4} END {if (NR > 2) print total/(NR-2); else print 0}' vmstat.log) # Memoria libre promedio en KB
-ram_total=$(grep MemTotal /proc/meminfo | awk '{print $2}') # Memoria total en KB
-
-# Calcula el uso promedio de RAM directamente usando bc para manejar todos los cálculos
-ram_usage_percent=$(echo "scale=2; ($ram_total - $ram_free_avg)*100/$ram_total" | bc -l)
+# Uso de CPU y RAM promedio calculado con awk
+cpu_usage=$(awk 'NR > 2 {total += $13} END {print total/(NR-2)}' vmstat.log)
+ram_total=$(grep MemTotal /proc/meminfo | awk '{print $2}')
+ram_usage_percent=$(awk -v total=$ram_total 'NR > 2 {used += total - $4} END {print (used/(NR-2))*100/total}' vmstat.log)
 
 # Mostrar resultados
 echo "Uso promedio de CPU: $cpu_usage %"
