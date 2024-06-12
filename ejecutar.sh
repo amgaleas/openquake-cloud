@@ -52,10 +52,9 @@ size_kb=$(du -k "$latest_hdf5" | cut -f1)
 cpu_usage=$(awk 'NR > 2 {total += $13} END {if (NR > 2) print total/(NR-2); else print 0}' vmstat.log)
 ram_free_avg=$(awk 'NR > 2 {total += $4} END {if (NR > 2) print total/(NR-2); else print 0}' vmstat.log) # Memoria libre promedio en KB
 ram_total=$(grep MemTotal /proc/meminfo | awk '{print $2}') # Memoria total en KB
-ram_used_avg=$((ram_total - ram_free_avg)) # Memoria usada promedio en KB
 
-# Calcula el porcentaje de uso de RAM con precisión
-ram_usage_percent=$(echo "scale=2; $ram_used_avg*100/$ram_total" | bc -l)
+# Calcula el uso promedio de RAM directamente usando bc para manejar todos los cálculos
+ram_usage_percent=$(echo "scale=2; ($ram_total - $ram_free_avg)*100/$ram_total" | bc -l)
 
 # Mostrar resultados
 echo "Uso promedio de CPU: $cpu_usage %"
