@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# Actualizar la lista de paquetes e instalar nginx
-sudo apt update -y
-sudo apt install -y nginx
-
 # Configurar nginx para servir la aplicación web en el puerto 8800
 sudo bash -c 'cat > /etc/nginx/sites-available/openquake <<EOL
 server {
@@ -34,9 +30,6 @@ fi
 
 # Activar el entorno virtual
 source /opt/openquake/venv/bin/activate
-
-# Instalar gunicorn (si no está instalado)
-pip install gunicorn
 
 # Iniciar la aplicación web usando gunicorn en el puerto 8800
 sudo bash -c 'cat > /etc/systemd/system/openquake.service <<EOL
