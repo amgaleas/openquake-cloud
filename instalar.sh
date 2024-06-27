@@ -14,6 +14,10 @@ sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 1
 # Instalar paquetes adicionales de Python
 sudo apt install -y python3.9-venv python3.9-dev
 sudo apt install -y python3-pip
+pip install gunicorn
+
+# Instalar nginx para desplegar Openquake
+sudo apt install -y nginx
 
 # Descargar el archivo install.py de OpenQuake
 curl -L -O https://github.com/gem/oq-engine/raw/master/install.py
